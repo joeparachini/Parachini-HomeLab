@@ -159,6 +159,47 @@ services:
     networks:
       - proxy
 
+  # Jellyfin - Media Server
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${CONFIG_PATH}/jellyfin:/config
+      - ${MEDIA_PATH}/tv:/data/tv
+      - ${MEDIA_PATH}/movies:/data/movies
+      - ${MEDIA_PATH}/music:/data/music
+    ports:
+      - "8096:8096"   # HTTP
+      - "8920:8920"   # HTTPS (optional)
+      - "7359:7359/udp" # Discovery (optional)
+      - "1900:1900/udp" # DLNA (optional)
+    networks:
+      - proxy
+
+  # Overseerr - Request Management
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    container_name: overseerr
+    restart: unless-stopped
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${CONFIG_PATH}/overseerr:/config
+    ports:
+      - "5055:5055"
+    networks:
+      - proxy
+    depends_on:
+      - sonarr
+      - radarr
+
 networks:
   proxy:
     name: proxy
