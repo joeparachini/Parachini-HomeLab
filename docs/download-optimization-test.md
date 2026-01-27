@@ -59,16 +59,29 @@ Connection count can stay at 50 either way.
 ## Test Results:
 
 ### Download Speed During Test:
-- Max speed observed: _______ MB/s
-- Average speed: _______ MB/s
-- Consistent or spikey: _______
+- Max speed observed: SLOWER than baseline
+- Average speed: Below 13-16 MB/s baseline
+- Consistent or spikey: N/A - Reverted immediately
 
 ### Decision:
 - [ ] Keep local downloads (faster)
-- [ ] Revert to NAS (no significant difference)
+- [x] **Revert to NAS** (local was SLOWER)
 
 ### Notes:
-_User to fill in after testing_
+**Test Date:** 2026-01-27
+
+**Result:** Local downloads + 50 connections were SLOWER than original setup.
+
+**Why local was slower:**
+1. **WSL2 filesystem overhead** - Writing to Windows filesystem from Linux containers adds translation layer
+2. **50 connections triggered throttling** - Either Usenet server or VPN provider limiting
+3. **Bad VPN server in random pool** - United States (random) picked slower server
+
+**Conclusion:**
+- **Original NAS setup is OPTIMAL** for this environment
+- NAS is NOT the bottleneck (VPN is)
+- 13-16 MB/s is excellent for 30-connection Usenet through VPN
+- VPN ceiling varies 17-24 MB/s depending on server selection
 
 ---
 
