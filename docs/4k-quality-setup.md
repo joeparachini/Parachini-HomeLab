@@ -1,7 +1,21 @@
-# 4K (Ultra-HD) Quality Profile Setup
+# 4K (Ultra-HD) Quality Profile Setup with HD Fallback
 
 ## Overview
-The homelab is now configured to prioritize **4K (2160p)** content for both movies and TV shows.
+The homelab is now configured to prioritize **4K (2160p)** content for both movies and TV shows, with **automatic fallback to HD (1080p)** when 4K is not available.
+
+## Fallback Behavior
+
+### How It Works
+1. **4K Available**: Downloads 4K immediately
+2. **Only HD Available**: Downloads 1080p as fallback
+3. **4K Released Later**: Automatically upgrades from 1080p to 4K
+4. **Both Available**: Always chooses 4K over HD
+
+### Benefits
+- ✅ Never miss content due to lack of 4K
+- ✅ Get content immediately in HD
+- ✅ Automatic upgrades when 4K becomes available
+- ✅ No manual intervention needed
 
 ## Configured Profiles
 
@@ -12,10 +26,14 @@ The homelab is now configured to prioritize **4K (2160p)** content for both movi
 - 3D: -10000 (blocked)
 
 **Quality Order:**
-1. Bluray-2160p
-2. WEBDL-2160p
-3. WEBRip-2160p
-4. HDTV-2160p
+1. Bluray-2160p (4K - preferred)
+2. WEBDL-2160p (4K)
+3. WEBRip-2160p (4K)
+4. HDTV-2160p (4K)
+5. Bluray-1080p (HD - fallback)
+6. WEBDL-1080p (HD - fallback)
+7. WEBRip-1080p (HD - fallback)
+8. HDTV-1080p (HD - fallback)
 
 **Upgrade Strategy:**
 - Upgrades allowed: Yes
@@ -33,11 +51,15 @@ The homelab is now configured to prioritize **4K (2160p)** content for both movi
 - x265 (HD): -10000 (blocked)
 
 **Quality Order:**
-1. HDTV-2160p
-2. WEBRip-2160p
-3. WEBDL-2160p
-4. Bluray-2160p Remux
-5. Bluray-2160p
+1. Bluray-2160p (4K - preferred)
+2. Bluray-2160p Remux (4K)
+3. WEBDL-2160p (4K)
+4. WEBRip-2160p (4K)
+5. HDTV-2160p (4K)
+6. Bluray-1080p (HD - fallback)
+7. WEBDL-1080p (HD - fallback)
+8. WEBRip-1080p (HD - fallback)
+9. HDTV-1080p (HD - fallback)
 
 **Upgrade Strategy:**
 - Upgrades allowed: Yes
