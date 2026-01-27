@@ -29,7 +29,7 @@ services:
   #     - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
   #     - "traefik.http.routers.traefik.service=api@internal"
 
-  # Gluetun - VPN Client (ready for torrenting if needed)
+  # Gluetun - VPN Client
   gluetun:
     image: qmcgaw/gluetun:latest
     container_name: gluetun
@@ -42,7 +42,11 @@ services:
       - "8888:8888/tcp"   # HTTP proxy
       - "8388:8388/tcp"   # Shadowsocks
       - "8388:8388/udp"   # Shadowsocks
-      # Port mappings for services moved to individual containers
+      - "8081:8080"       # SABnzbd
+      - "9696:9696"       # Prowlarr
+      - "8989:8989"       # Sonarr
+      - "7878:7878"       # Radarr
+      - "8686:8686"       # Lidarr
     environment:
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
       - VPN_TYPE=${VPN_TYPE}
@@ -57,13 +61,12 @@ services:
     networks:
       - proxy
 
-  # SABnzbd - Usenet Downloader (direct connection with SSL)
+  # SABnzbd - Usenet Downloader (through VPN)
   sabnzbd:
     image: lscr.io/linuxserver/sabnzbd:latest
     container_name: sabnzbd
     restart: unless-stopped
-    ports:
-      - "8081:8080"
+    network_mode: "service:gluetun"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -72,32 +75,30 @@ services:
       - ${CONFIG_PATH}/sabnzbd:/config
       - ${DOWNLOADS_PATH}:/downloads
       - ${DOWNLOADS_PATH}/incomplete:/incomplete-downloads
-    networks:
-      - proxy
+    depends_on:
+      - gluetun
 
-  # Prowlarr - Indexer Manager (direct connection)
+  # Prowlarr - Indexer Manager (through VPN)
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     restart: unless-stopped
-    ports:
-      - "9696:9696"
+    network_mode: "service:gluetun"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
     volumes:
       - ${CONFIG_PATH}/prowlarr:/config
-    networks:
-      - proxy
+    depends_on:
+      - gluetun
 
-  # Sonarr - TV Shows Manager
+  # Sonarr - TV Shows Manager (through VPN)
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
     restart: unless-stopped
-    ports:
-      - "8989:8989"
+    network_mode: "service:gluetun"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -107,17 +108,15 @@ services:
       - ${MEDIA_PATH}/tv:/tv
       - ${DOWNLOADS_PATH}:/downloads
     depends_on:
+      - gluetun
       - prowlarr
-    networks:
-      - proxy
 
-  # Radarr - Movies Manager
+  # Radarr - Movies Manager (through VPN)
   radarr:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     restart: unless-stopped
-    ports:
-      - "7878:7878"
+    network_mode: "service:gluetun"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -127,17 +126,15 @@ services:
       - ${MEDIA_PATH}/movies:/movies
       - ${DOWNLOADS_PATH}:/downloads
     depends_on:
+      - gluetun
       - prowlarr
-    networks:
-      - proxy
 
-  # Lidarr - Music Manager
+  # Lidarr - Music Manager (through VPN)
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
     container_name: lidarr
     restart: unless-stopped
-    ports:
-      - "8686:8686"
+    network_mode: "service:gluetun"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -147,9 +144,8 @@ services:
       - ${MEDIA_PATH}/music:/music
       - ${DOWNLOADS_PATH}:/downloads
     depends_on:
+      - gluetun
       - prowlarr
-    networks:
-      - proxy
 
   # Recyclarr - TRaSH Guide Sync
   recyclarr:
