@@ -26,6 +26,8 @@ Your Docker homelab media server is fully configured and ready to use!
 | Windows Plex | (Your Windows PC) | ✅ Configured | Streaming server |
 | **Request Management** |
 | Overseerr | http://localhost:5055 | ✅ Configured | User requests |
+| **Subtitles** |
+| Bazarr | http://localhost:6767 | ✅ Configured | Subtitle downloads |
 
 ---
 
