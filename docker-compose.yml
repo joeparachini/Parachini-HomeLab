@@ -43,6 +43,9 @@ services:
       - "8388:8388/udp"   # Shadowsocks
       - "8081:8080"       # SABnzbd
       - "9696:9696"       # Prowlarr
+      - "8989:8989"       # Sonarr
+      - "7878:7878"       # Radarr
+      - "8686:8686"       # Lidarr
     environment:
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
       - VPN_TYPE=${VPN_TYPE}
@@ -88,6 +91,73 @@ services:
       - ${CONFIG_PATH}/prowlarr:/config
     depends_on:
       - gluetun
+
+  # Sonarr - TV Shows Manager (through VPN)
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${CONFIG_PATH}/sonarr:/config
+      - ${MEDIA_PATH}/tv:/tv
+      - ${DOWNLOADS_PATH}:/downloads
+    depends_on:
+      - gluetun
+      - prowlarr
+
+  # Radarr - Movies Manager (through VPN)
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${CONFIG_PATH}/radarr:/config
+      - ${MEDIA_PATH}/movies:/movies
+      - ${DOWNLOADS_PATH}:/downloads
+    depends_on:
+      - gluetun
+      - prowlarr
+
+  # Lidarr - Music Manager (through VPN)
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${CONFIG_PATH}/lidarr:/config
+      - ${MEDIA_PATH}/music:/music
+      - ${DOWNLOADS_PATH}:/downloads
+    depends_on:
+      - gluetun
+      - prowlarr
+
+  # Recyclarr - TRaSH Guide Sync
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr:latest
+    container_name: recyclarr
+    restart: unless-stopped
+    user: "${PUID}:${PGID}"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${CONFIG_PATH}/recyclarr:/config
+    networks:
+      - proxy
 
 networks:
   proxy:
