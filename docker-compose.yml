@@ -57,7 +57,7 @@ services:
     networks:
       - proxy
 
-  # SABnzbd - Usenet Downloader (direct connection with SSL)
+  # SABnzbd - Usenet Downloader
   sabnzbd:
     image: lscr.io/linuxserver/sabnzbd:latest
     container_name: sabnzbd
@@ -70,8 +70,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ${CONFIG_PATH}/sabnzbd:/config
-      - ${DOWNLOADS_PATH}:/downloads
-      - ${DOWNLOADS_PATH}/incomplete:/incomplete-downloads
+      - ${DATA_PATH}:/data
     networks:
       - proxy
 
@@ -104,8 +103,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ${CONFIG_PATH}/sonarr:/config
-      - ${MEDIA_PATH}/tv:/tv
-      - ${DOWNLOADS_PATH}:/downloads
+      - ${DATA_PATH}:/data
     depends_on:
       - prowlarr
     networks:
@@ -124,8 +122,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ${CONFIG_PATH}/radarr:/config
-      - ${MEDIA_PATH}/movies:/movies
-      - ${DOWNLOADS_PATH}:/downloads
+      - ${DATA_PATH}:/data
     depends_on:
       - prowlarr
     networks:
@@ -144,8 +141,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ${CONFIG_PATH}/lidarr:/config
-      - ${MEDIA_PATH}/music:/music
-      - ${DOWNLOADS_PATH}:/downloads
+      - ${DATA_PATH}:/data
     depends_on:
       - prowlarr
     networks:
@@ -165,6 +161,7 @@ services:
       - proxy
 
   # Jellyfin - Media Server
+  # ATOMIC MOVES: Single /data volume for consistency
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
@@ -175,9 +172,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ${CONFIG_PATH}/jellyfin:/config
-      - ${MEDIA_PATH}/tv:/data/tv
-      - ${MEDIA_PATH}/movies:/data/movies
-      - ${MEDIA_PATH}/music:/data/music
+      - ${DATA_PATH}:/data
     ports:
       - "8096:8096"   # HTTP
       - "8920:8920"   # HTTPS (optional)
@@ -216,8 +211,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ${CONFIG_PATH}/bazarr:/config
-      - ${MEDIA_PATH}/tv:/tv
-      - ${MEDIA_PATH}/movies:/movies
+      - ${DATA_PATH}:/data
     ports:
       - "6767:6767"
     networks:
@@ -235,6 +229,7 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
+      - HOMEPAGE_ALLOWED_HOSTS=dashboard.joeparachini.com
     volumes:
       - ${CONFIG_PATH}/homepage:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -242,6 +237,19 @@ services:
       - "3000:3000"
     networks:
       - proxy
+
+  # Cloudflare Tunnel - Secure Remote Access
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    volumes:
+      - ${CONFIG_PATH}/cloudflared:/etc/cloudflared
+    networks:
+      - proxy
+    environment:
+      - TZ=${TZ}
 
 networks:
   proxy:
