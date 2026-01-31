@@ -6,7 +6,7 @@ set -e
 
 # Configuration
 HOMELAB_DIR="/home/joe/Parachini-HomeLab"
-BACKUP_DIR="/mnt/nas/backups/homelab-config"
+BACKUP_DIR="/mnt/nas/HomeLabData/backups/homelab-config"
 DATE=$(date +%Y%m%d)
 BACKUP_FILE="homelab-${DATE}.tar.gz"
 LOG_FILE="$HOMELAB_DIR/logs/backup.log"

@@ -1,61 +1,33 @@
 version: '3.8'
 
 services:
-  # Traefik - Reverse Proxy (DISABLED - Ready for future use)
-  # To enable: uncomment the service below and run: docker-compose up -d traefik
-  # traefik:
-  #   image: traefik:v2.11
-  #   container_name: traefik
+  # Gluetun - VPN Client (DISABLED - was causing restart issues)
+  # gluetun:
+  #   image: qmcgaw/gluetun:latest
+  #   container_name: gluetun
   #   restart: unless-stopped
-  #   security_opt:
-  #     - no-new-privileges:true
+  #   cap_add:
+  #     - NET_ADMIN
+  #   devices:
+  #     - /dev/net/tun:/dev/net/tun
+  #   ports:
+  #     - "8888:8888/tcp"   # HTTP proxy
+  #     - "8388:8388/tcp"   # Shadowsocks
+  #     - "8388:8388/udp"   # Shadowsocks
+  #     # Port mappings for services moved to individual containers
+  #   environment:
+  #     - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
+  #     - VPN_TYPE=${VPN_TYPE}
+  #     - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+  #     - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+  #     - SERVER_COUNTRIES=${SERVER_COUNTRIES}
+  #     - TZ=${TZ}
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #   volumes:
+  #     - ${CONFIG_PATH}/gluetun:/gluetun
   #   networks:
   #     - proxy
-  #   ports:
-  #     - "80:80"      # HTTP
-  #     - "443:443"    # HTTPS
-  #     - "8080:8080"  # Dashboard
-  #   environment:
-  #     - TZ=${TZ}
-  #   volumes:
-  #     - /etc/localtime:/etc/localtime:ro
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - ${CONFIG_PATH}/traefik/traefik.yml:/traefik.yml:ro
-  #     - ${CONFIG_PATH}/traefik/config.yml:/config.yml:ro
-  #     - ${CONFIG_PATH}/traefik/acme.json:/acme.json
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.traefik.entrypoints=http"
-  #     - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
-  #     - "traefik.http.routers.traefik.service=api@internal"
-
-  # Gluetun - VPN Client (ready for torrenting if needed)
-  gluetun:
-    image: qmcgaw/gluetun:latest
-    container_name: gluetun
-    restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    ports:
-      - "8888:8888/tcp"   # HTTP proxy
-      - "8388:8388/tcp"   # Shadowsocks
-      - "8388:8388/udp"   # Shadowsocks
-      # Port mappings for services moved to individual containers
-    environment:
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=${VPN_TYPE}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
-      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    volumes:
-      - ${CONFIG_PATH}/gluetun:/gluetun
-    networks:
-      - proxy
 
   # SABnzbd - Usenet Downloader
   sabnzbd:
@@ -230,6 +202,12 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
       - HOMEPAGE_ALLOWED_HOSTS=dashboard.joeparachini.com
+      - HOMEPAGE_VAR_IMMICH_API_KEY=${HOMEPAGE_VAR_IMMICH_API_KEY}
+      - HOMEPAGE_VAR_CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+      - HOMEPAGE_VAR_CLOUDFLARE_TUNNEL_ID=${CLOUDFLARE_TUNNEL_ID}
+      - HOMEPAGE_VAR_CLOUDFLARE_API_TOKEN=${CLOUDFLARE_WIDGET_API_TOKEN}
+      - HOMEPAGE_VAR_SYNOLOGY_USERNAME=${SYNOLOGY_USERNAME}
+      - HOMEPAGE_VAR_SYNOLOGY_PASSWORD=${SYNOLOGY_PASSWORD}
     volumes:
       - ${CONFIG_PATH}/homepage:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
