@@ -217,6 +217,7 @@ services:
       - proxy
 
   # Cloudflare Tunnel - Secure Remote Access
+  # NOTE: Uses dashboard config (--token), NOT local config.yml file
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
@@ -228,6 +229,91 @@ services:
       - proxy
     environment:
       - TZ=${TZ}
+
+  # OpenSpeedTest - Network Speed Testing
+  openspeedtest:
+    image: openspeedtest/latest:latest
+    container_name: openspeedtest
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    networks:
+      - proxy
+    environment:
+      - TZ=${TZ}
+
+  # IT-Tools - Developer & Network Utilities
+  it-tools:
+    image: corentinth/it-tools:latest
+    container_name: it-tools
+    restart: unless-stopped
+    ports:
+      - "8280:80"
+    networks:
+      - proxy
+    environment:
+      - TZ=${TZ}
+
+  # Stirling-PDF - PDF Manipulation Tools
+  stirling-pdf:
+    image: frooodle/s-pdf:latest
+    container_name: stirling-pdf
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    networks:
+      - proxy
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ${CONFIG_PATH}/stirling-pdf:/configs
+
+  # Apache Guacamole - Remote Desktop Gateway
+  guacd:
+    image: guacamole/guacd:latest
+    container_name: guacd
+    restart: unless-stopped
+    networks:
+      - proxy
+    environment:
+      - TZ=${TZ}
+
+  guacamole-db:
+    image: postgres:15-alpine
+    container_name: guacamole-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=guacamole_db
+      - POSTGRES_USER=${GUACAMOLE_DB_USER:-guacamole}
+      - POSTGRES_PASSWORD=${GUACAMOLE_DB_PASSWORD}
+      - TZ=${TZ}
+    volumes:
+      - ${CONFIG_PATH}/guacamole/postgres:/var/lib/postgresql/data
+      - ${CONFIG_PATH}/guacamole/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - proxy
+
+  guacamole:
+    image: guacamole/guacamole:latest
+    container_name: guacamole
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - GUACD_HOSTNAME=guacd
+      - POSTGRESQL_HOSTNAME=guacamole-db
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_DATABASE=guacamole_db
+      - POSTGRESQL_USER=guacamole
+      - POSTGRESQL_PASSWORD=SuperSecurePassword123
+      - TZ=${TZ}
+    depends_on:
+      - guacd
+      - guacamole-db
+    networks:
+      - proxy
 
 networks:
   proxy:
