@@ -4,13 +4,15 @@
 Automated backup system for Parachini-HomeLab configuration files, API keys, and service databases.
 
 ## What Gets Backed Up
-- **`config/`** - All service configurations, databases, settings (~250MB compressed)
+- **`config/`** - All service configurations and settings
 - **`.env`** - Credentials and API keys
+- **Guacamole database dump (`pg_dump`)** - Captured nightly from `guacamole-db`
 
 ## What Doesn't Get Backed Up
 - `data/downloads/` - Temporary download files
 - `/mnt/nas/media/` - Your actual media library (backed up separately on NAS)
 - Docker images - Can be re-downloaded
+- Raw Guacamole Postgres data dir (`config/guacamole/postgres`) - excluded because container permissions are restrictive; logical DB dump is included instead
 
 ## Backup Schedule
 **Daily at 4:00 AM CST** via cron job
@@ -51,6 +53,8 @@ DELETED:
 **When it runs**: Automatically at 4am CST (cron)  
 **What it does**:
 - Creates compressed archive: `homelab-YYYYMMDD.tar.gz`
+- Uses timeout-based NAS checks so stale mounts fail fast instead of hanging
+- Creates Guacamole DB logical backup before archiving files
 - Applies retention policy (deletes old backups)
 - Logs to `/home/joe/Parachini-HomeLab/logs/backup.log`
 
